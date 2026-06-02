@@ -1,6 +1,7 @@
 'use client';
 import { use, useState } from 'react';
-import { DEPARTMENTS, getTasksByDepartment, getDepartmentStats, TASKS } from '@/lib/data';
+import { DEPARTMENTS } from '@/lib/data';
+import { useTaskStore } from '@/lib/store';
 import { KanbanBoard } from '@/components/dashboard/KanbanBoard';
 import { TaskCard } from '@/components/dashboard/TaskCard';
 import { TaskDetailModal } from '@/components/dashboard/TaskDetailModal';
@@ -24,10 +25,23 @@ export default function DepartmentPage({ params }: { params: Promise<{ dept: str
   const [selected, setSelected] = useState<Task | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
+  const { tasks: allTasks } = useTaskStore();
+
   if (!dept) return <div className="p-8 text-slate-500">Department not found.</div>;
 
-  const tasks = getTasksByDepartment(dept.id as Department);
-  const stats = getDepartmentStats(dept.id as Department);
+  const tasks = allTasks.filter((t) => t.department === dept.id);
+  const total = tasks.length;
+  const done = tasks.filter((t) => t.status === 'done').length;
+  const blocked = tasks.filter((t) => t.status === 'blocked').length;
+  const inProgress = tasks.filter((t) => t.status === 'in_progress').length;
+  const overdue = tasks.filter((t) => t.status !== 'done' && new Date(t.dueDate) < new Date()).length;
+  const progress = total ? Math.round((done / total) * 100) : 0;
+  let healthVal: 'on-track' | 'at-risk' | 'blocked';
+  if (blocked > 0 || overdue > 1) healthVal = 'blocked';
+  else if (overdue > 0 || (total > 0 && done / total < 0.3 && inProgress < 2)) healthVal = 'at-risk';
+  else healthVal = 'on-track';
+  const stats = { total, done, blocked, inProgress, overdue, health: healthVal, progress };
+
   const Icon = ICONS[dept.icon] || Settings;
 
   const filteredTasks = statusFilter === 'all'
@@ -36,7 +50,7 @@ export default function DepartmentPage({ params }: { params: Promise<{ dept: str
 
   const crossDeps = tasks
     .flatMap((t) => t.dependencies.map((depId) => {
-      const depTask = TASKS.find((x) => x.id === depId);
+      const depTask = allTasks.find((x) => x.id === depId);
       if (depTask && depTask.department !== dept.id) return { task: t, depTask };
       return null;
     }))
@@ -177,7 +191,7 @@ export default function DepartmentPage({ params }: { params: Promise<{ dept: str
           task={selected}
           onClose={() => setSelected(null)}
           onNavigate={(id) => {
-            const t = TASKS.find((x) => x.id === id);
+            const t = allTasks.find((x) => x.id === id);
             if (t) setSelected(t);
           }}
         />

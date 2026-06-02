@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
-import { Task, Status, DEPARTMENTS } from '@/lib/data';
+import { Task, Status } from '@/lib/data';
+import { useTaskStore } from '@/lib/store';
 import { statusLabel, cn } from '@/lib/utils';
 import { TaskCard } from './TaskCard';
 import { TaskDetailModal } from './TaskDetailModal';
@@ -29,6 +30,7 @@ interface Props {
 }
 
 export function KanbanBoard({ tasks, showDept = false }: Props) {
+  const { tasks: allTasks } = useTaskStore();
   const [selected, setSelected] = useState<Task | null>(null);
 
   const columns = COLUMNS.map((status) => ({
@@ -74,7 +76,7 @@ export function KanbanBoard({ tasks, showDept = false }: Props) {
           task={selected}
           onClose={() => setSelected(null)}
           onNavigate={(id) => {
-            const t = tasks.find((x) => x.id === id);
+            const t = allTasks.find((x) => x.id === id);
             if (t) setSelected(t);
           }}
         />

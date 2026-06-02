@@ -1,11 +1,13 @@
 'use client';
 import { useState } from 'react';
-import { TASKS, DEPARTMENTS, Task, EVENT_DATE_VALUE } from '@/lib/data';
+import { DEPARTMENTS, Task, EVENT_DATE_VALUE } from '@/lib/data';
+import { useTaskStore } from '@/lib/store';
 import { statusColor, statusLabel, formatDate, daysUntil, cn, DEPT_COLORS } from '@/lib/utils';
 import { TaskDetailModal } from './TaskDetailModal';
 import { Flag, Calendar } from 'lucide-react';
 
 export function Timeline() {
+  const { tasks: TASKS } = useTaskStore();
   const [selected, setSelected] = useState<Task | null>(null);
   const [filterDept, setFilterDept] = useState<string>('all');
 
