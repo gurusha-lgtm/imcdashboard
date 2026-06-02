@@ -6,11 +6,11 @@ import { healthColor, cn } from '@/lib/utils';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import {
   TrendingUp, Mic, Megaphone, Newspaper, Landmark, Settings, Rocket,
-  AlertCircle, Clock, CheckCircle2
+  AlertCircle, Clock, CheckCircle2, DollarSign,
 } from 'lucide-react';
 
 const ICONS: Record<string, React.ElementType> = {
-  TrendingUp, Mic, Megaphone, Newspaper, Landmark, Settings, Rocket,
+  TrendingUp, Mic, Megaphone, Newspaper, Landmark, Settings, Rocket, DollarSign,
 };
 
 interface Props {

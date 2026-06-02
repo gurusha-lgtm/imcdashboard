@@ -8,13 +8,13 @@ import { ProgressBar } from '@/components/ui/ProgressBar';
 import { Avatar } from '@/components/ui/Avatar';
 import { healthColor, statusColor, statusLabel, formatDate, cn } from '@/lib/utils';
 import {
-  TrendingUp, Mic, Megaphone, Newspaper, Landmark, Settings, Rocket,
+  TrendingUp, Mic, Megaphone, Newspaper, Landmark, Settings, Rocket, DollarSign,
   LayoutGrid, List, Filter,
 } from 'lucide-react';
 import type { Task, Department } from '@/lib/data';
 
 const ICONS: Record<string, React.ElementType> = {
-  TrendingUp, Mic, Megaphone, Newspaper, Landmark, Settings, Rocket,
+  TrendingUp, Mic, Megaphone, Newspaper, Landmark, Settings, Rocket, DollarSign,
 };
 
 export default function DepartmentPage({ params }: { params: Promise<{ dept: string }> }) {
