@@ -1,9 +1,12 @@
 'use client';
 import { Task, DEPARTMENTS } from '@/lib/data';
-import { statusColor, statusLabel, priorityColor, priorityLabel, formatDate, daysUntil, cn } from '@/lib/utils';
+import { priorityColor, priorityLabel, formatDate, daysUntil, cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/Badge';
 import { AvatarGroup } from '@/components/ui/Avatar';
-import { AlertCircle, Clock, Link2, CheckSquare } from 'lucide-react';
+import { Clock, Link2, CheckSquare } from 'lucide-react';
+import { StatusPill } from './StatusPill';
+import { useTaskStore } from '@/lib/store';
+import { useAuth } from '@/lib/auth';
 
 interface TaskCardProps {
   task: Task;
@@ -17,6 +20,8 @@ export function TaskCard({ task, onClick, showDept = false }: TaskCardProps) {
   const isDueSoon = days >= 0 && days <= 3 && task.status !== 'done';
   const dept = DEPARTMENTS.find((d) => d.id === task.department);
   const completedSubs = task.subtasks.filter((s) => s.done).length;
+  const { updateTask } = useTaskStore();
+  const { user } = useAuth();
 
   return (
     <div
@@ -47,14 +52,22 @@ export function TaskCard({ task, onClick, showDept = false }: TaskCardProps) {
         </div>
       </div>
 
+      {/* Status pill */}
+      <div className="mb-2.5" onClick={(e) => e.stopPropagation()}>
+        <StatusPill
+          task={task}
+          size="sm"
+          onUpdate={(status, blockedReason) => {
+            updateTask(task.id, { status, blocked_reason: status === 'blocked' ? blockedReason : undefined }, {
+              blockedReason,
+              userName: user?.name,
+            });
+          }}
+        />
+      </div>
+
       {/* Meta row */}
       <div className="flex flex-wrap items-center gap-2 mb-2.5">
-        <Badge className={statusColor(task.status)}>{statusLabel(task.status)}</Badge>
-        {task.status === 'blocked' && (
-          <span className="flex items-center gap-1 text-red-600 text-xs font-medium">
-            <AlertCircle className="w-3 h-3" /> Blocked
-          </span>
-        )}
         {task.dependencies.length > 0 && (
           <span className="flex items-center gap-1 text-slate-400 text-xs">
             <Link2 className="w-3 h-3" /> {task.dependencies.length} dep
@@ -76,6 +89,13 @@ export function TaskCard({ task, onClick, showDept = false }: TaskCardProps) {
               style={{ width: `${(completedSubs / task.subtasks.length) * 100}%` }}
             />
           </div>
+        </div>
+      )}
+
+      {/* Blocked reason */}
+      {task.status === 'blocked' && task.blocked_reason && (
+        <div className="mb-2 text-xs text-red-600 bg-red-50 border border-red-200 rounded px-2 py-1">
+          🚨 {task.blocked_reason}
         </div>
       )}
 

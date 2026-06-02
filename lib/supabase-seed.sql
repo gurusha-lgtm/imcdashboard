@@ -1,6 +1,9 @@
 -- IMC 2026 Dashboard — Supabase Schema & Seed
 -- Run this in your Supabase SQL Editor
 
+-- Add blocked_reason column if it doesn't exist (run this on existing databases)
+alter table tasks add column if not exists blocked_reason text;
+
 -- Drop existing table if re-running
 drop table if exists tasks;
 
@@ -21,6 +24,7 @@ create table tasks (
   dependencies text[] default '{}',
   milestone boolean default false,
   notes text,
+  blocked_reason text,
   updated_at timestamptz default now()
 );
 

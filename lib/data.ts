@@ -36,6 +36,7 @@ export interface Task {
   dependencies: string[];
   milestone?: boolean;
   notes?: string;
+  blocked_reason?: string;
 }
 
 export interface DepartmentInfo {

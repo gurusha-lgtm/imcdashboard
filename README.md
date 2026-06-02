@@ -1,3 +1,44 @@
+## WhatsApp Integration
+
+The `/api/whatsapp-update` endpoint allows updating task status via WhatsApp bots (Twilio/WATI).
+
+### Endpoint
+
+`POST /api/whatsapp-update`
+
+### Payload
+
+```json
+{
+  "taskId": "SM001",
+  "newStatus": "blocked",
+  "blockedReason": "Waiting for legal sign-off",
+  "userId": "Pradeep Prakash"
+}
+```
+
+- `taskId` (required): The task ID (e.g. `SM001`, `PR001`)
+- `newStatus` (required): One of `not_started`, `in_progress`, `blocked`, `review`, `done`
+- `blockedReason` (optional): Required context when `newStatus` is `blocked`
+- `userId` (optional): Name of the person sending the update (for the auto-comment)
+
+### Connecting Twilio / WATI
+
+1. Deploy this app to a public URL (e.g. Vercel)
+2. In your Twilio/WATI dashboard, set the webhook URL to:
+   `POST https://your-domain.com/api/whatsapp-update`
+3. Parse the incoming WhatsApp message in a separate serverless function and call this endpoint
+
+### Example curl
+
+```bash
+curl -X POST https://your-domain.com/api/whatsapp-update \
+  -H "Content-Type: application/json" \
+  -d '{"taskId":"SM001","newStatus":"blocked","blockedReason":"Partner not responding","userId":"Pradeep Prakash"}'
+```
+
+---
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started

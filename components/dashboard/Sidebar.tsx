@@ -4,10 +4,11 @@ import { usePathname } from 'next/navigation';
 import { DEPARTMENTS } from '@/lib/data';
 import { getDepartmentStats } from '@/lib/data';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/lib/auth';
 import {
   LayoutDashboard, CalendarRange, AlertCircle,
   TrendingUp, Mic, Megaphone, Newspaper, Landmark, Settings, Rocket,
-  FileSpreadsheet, DollarSign,
+  FileSpreadsheet, DollarSign, User, BarChart2,
 } from 'lucide-react';
 
 const ICONS: Record<string, React.ElementType> = {
@@ -15,14 +16,20 @@ const ICONS: Record<string, React.ElementType> = {
 };
 
 const NAV = [
+  { href: '/my-tasks', label: 'My Tasks', icon: User },
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/timeline', label: 'Master Timeline', icon: CalendarRange },
   { href: '/dependencies', label: 'Dependencies', icon: AlertCircle },
   { href: '/sheets-import', label: 'Sheets Import', icon: FileSpreadsheet },
 ];
 
+const LEADERSHIP_NAV = [
+  { href: '/ceo', label: 'CEO View', icon: BarChart2 },
+];
+
 export function Sidebar() {
   const pathname = usePathname();
+  const { user, clearUser } = useAuth();
 
   return (
     <aside className="w-60 shrink-0 bg-white border-r border-slate-100 flex flex-col h-screen sticky top-0 overflow-y-auto">
@@ -105,12 +112,50 @@ export function Sidebar() {
         </div>
       </div>
 
+      {/* Leadership nav */}
+      <div className="px-3 pb-2">
+        <div className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 px-3 mb-2">
+          Leadership
+        </div>
+        <div className="space-y-0.5">
+          {LEADERSHIP_NAV.map(({ href, label, icon: Icon }) => (
+            <Link
+              key={href}
+              href={href}
+              className={cn(
+                'flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors',
+                pathname === href
+                  ? 'bg-violet-50 text-violet-700 font-medium'
+                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-800'
+              )}
+            >
+              <Icon className="w-4 h-4" />
+              {label}
+            </Link>
+          ))}
+        </div>
+      </div>
+
       {/* Event countdown */}
       <div className="px-4 py-3 m-3 bg-blue-50 rounded-xl">
         <div className="text-[10px] text-blue-500 font-semibold uppercase tracking-wide mb-0.5">Event Day</div>
         <div className="text-xs text-blue-800 font-medium">7–10 October 2026, Yashobhoomi</div>
         <EventCountdown />
       </div>
+
+      {/* Logged in user */}
+      {user && (
+        <div className="px-4 py-3 border-t border-slate-100">
+          <div className="text-[10px] text-slate-400">Logged in as</div>
+          <div className="text-xs font-semibold text-slate-700 truncate">{user.name}</div>
+          <button
+            onClick={clearUser}
+            className="text-[10px] text-blue-500 hover:underline mt-0.5"
+          >
+            Switch user
+          </button>
+        </div>
+      )}
     </aside>
   );
 }

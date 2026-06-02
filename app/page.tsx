@@ -1,5 +1,7 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/lib/auth';
 import { DEPARTMENTS, EVENT_DATE_VALUE } from '@/lib/data';
 import { useTaskStore } from '@/lib/store';
 import { DeptCard } from '@/components/dashboard/DeptCard';
@@ -13,6 +15,14 @@ import type { Task } from '@/lib/data';
 export default function HomePage() {
   const { tasks, loading } = useTaskStore();
   const [selected, setSelected] = useState<Task | null>(null);
+  const { user } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (user?.role === 'member') {
+      router.replace('/my-tasks');
+    }
+  }, [user, router]);
 
   const totalTasks = tasks.length;
   const doneTasks = tasks.filter((t) => t.status === 'done').length;

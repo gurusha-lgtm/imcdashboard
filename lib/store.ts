@@ -20,14 +20,20 @@ function dbToTask(row: Record<string, unknown>): Task {
     dependencies: (row.dependencies as string[]) || [],
     milestone: (row.milestone as boolean) || false,
     notes: (row.notes as string) || undefined,
+    blocked_reason: (row.blocked_reason as string) || undefined,
   };
+}
+
+interface UpdateOptions {
+  blockedReason?: string;
+  userName?: string;
 }
 
 interface TaskStore {
   tasks: Task[];
   loading: boolean;
   error: string | null;
-  updateTask: (id: string, changes: Partial<Task>) => Promise<void>;
+  updateTask: (id: string, changes: Partial<Task>, options?: UpdateOptions) => Promise<void>;
   addComment: (id: string, author: string, text: string) => Promise<void>;
   toggleSubtask: (taskId: string, subtaskId: string) => Promise<void>;
   refetch: () => Promise<void>;
@@ -68,7 +74,8 @@ export function TaskStoreProvider({ children }: { children: ReactNode }) {
     setTasks((prev) => prev.map((t) => (t.id === id ? dbToTask(updated) : t)));
   }, []);
 
-  const updateTask = useCallback(async (id: string, changes: Partial<Task>) => {
+  const updateTask = useCallback(async (id: string, changes: Partial<Task>, options?: UpdateOptions) => {
+    const task = tasks.find((t) => t.id === id);
     // Map camelCase → snake_case for DB
     const payload: Record<string, unknown> = {};
     if (changes.status !== undefined) payload.status = changes.status;
@@ -80,8 +87,22 @@ export function TaskStoreProvider({ children }: { children: ReactNode }) {
     if (changes.dueDate !== undefined) payload.due_date = changes.dueDate;
     if (changes.subtasks !== undefined) payload.subtasks = changes.subtasks;
     if (changes.comments !== undefined) payload.comments = changes.comments;
+    if (changes.blocked_reason !== undefined) payload.blocked_reason = changes.blocked_reason;
+
+    // If setting to blocked with a reason, auto-add comment
+    if (changes.status === 'blocked' && options?.blockedReason && task) {
+      payload.blocked_reason = options.blockedReason;
+      const autoComment = {
+        id: `br_${Date.now()}`,
+        author: options.userName || 'System',
+        text: `🚨 Blocked: ${options.blockedReason}`,
+        timestamp: new Date().toISOString().split('T')[0],
+      };
+      payload.comments = [...(task.comments || []), autoComment];
+    }
+
     await patchTask(id, payload);
-  }, [patchTask]);
+  }, [tasks, patchTask]);
 
   const addComment = useCallback(async (id: string, author: string, text: string) => {
     const task = tasks.find((t) => t.id === id);
