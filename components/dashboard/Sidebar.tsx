@@ -97,7 +97,7 @@ export function Sidebar() {
       {/* Event countdown */}
       <div className="px-4 py-3 m-3 bg-blue-50 rounded-xl">
         <div className="text-[10px] text-blue-500 font-semibold uppercase tracking-wide mb-0.5">Event Day</div>
-        <div className="text-xs text-blue-800 font-medium">8–11 October 2025, Yashobhoomi</div>
+        <div className="text-xs text-blue-800 font-medium">7–10 October 2026, Yashobhoomi</div>
         <EventCountdown />
       </div>
     </aside>
@@ -105,7 +105,7 @@ export function Sidebar() {
 }
 
 function EventCountdown() {
-  const event = new Date('2025-10-08');
+  const event = new Date('2026-10-07');
   const now = new Date();
   const days = Math.max(0, Math.round((event.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
   return (

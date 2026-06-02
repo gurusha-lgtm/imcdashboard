@@ -48,8 +48,8 @@ export interface DepartmentInfo {
   icon: string;
 }
 
-// IMC 2025: October 8–11, 2025, IICC Yashobhoomi, New Delhi
-const EVENT_DATE = '2025-10-08';
+// IMC 2025: October 7–10, 2026, IICC Yashobhoomi, New Delhi
+const EVENT_DATE = '2026-10-07';
 
 function weeksBeforeEvent(weeks: number): string {
   const eventDate = new Date(EVENT_DATE);
@@ -241,7 +241,7 @@ export const TASKS: Task[] = [
   {
     id: 'PR001',
     title: 'Keynote Speaker Confirmations',
-    description: 'Confirm keynote speakers for main stage across all 4 event days (Oct 8–11)',
+    description: 'Confirm keynote speakers for main stage across all 4 event days (Oct 7–10)',
     department: 'programs',
     status: 'in_progress',
     priority: 'critical',
@@ -357,7 +357,7 @@ export const TASKS: Task[] = [
   {
     id: 'PR007',
     title: 'Stage Scripts & Runsheets (All 4 Days)',
-    description: 'Prepare MC scripts and minute-by-minute runsheets for Oct 8–11',
+    description: 'Prepare MC scripts and minute-by-minute runsheets for Oct 7–10',
     department: 'programs',
     status: 'not_started',
     priority: 'high',
@@ -758,5 +758,5 @@ export function EVENT_DATE_VALUE() {
 }
 
 export function EVENT_END_DATE() {
-  return '2025-10-11';
+  return '2026-10-10';
 }
