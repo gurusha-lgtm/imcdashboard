@@ -5,10 +5,11 @@ import { DEPARTMENTS } from '@/lib/data';
 import { getDepartmentStats } from '@/lib/data';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/lib/auth';
+import { useTaskStore } from '@/lib/store';
 import {
   LayoutDashboard, CalendarRange, AlertCircle,
   TrendingUp, Mic, Megaphone, Newspaper, Landmark, Settings, Rocket,
-  FileSpreadsheet, DollarSign, User, BarChart2,
+  FileSpreadsheet, DollarSign, User, BarChart2, MessageCircle,
 } from 'lucide-react';
 
 const ICONS: Record<string, React.ElementType> = {
@@ -29,7 +30,7 @@ const LEADERSHIP_NAV = [
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { user, clearUser } = useAuth();
+  const { user } = useAuth();
 
   return (
     <aside className="w-60 shrink-0 bg-white border-r border-slate-100 flex flex-col h-screen sticky top-0 overflow-y-auto">
@@ -136,27 +137,49 @@ export function Sidebar() {
         </div>
       </div>
 
+      {/* WhatsApp updates badge */}
+      <div className="px-3 pb-2">
+        <div className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 px-3 mb-2">
+          WhatsApp
+        </div>
+        <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-emerald-50">
+          <MessageCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+          <div className="flex-1 min-w-0">
+            <div className="text-xs font-medium text-emerald-800">Updates today</div>
+            <div className="text-[10px] text-emerald-600">Webhook: /api/whatsapp</div>
+          </div>
+          <WhatsAppBadge />
+        </div>
+      </div>
+
       {/* Event countdown */}
-      <div className="px-4 py-3 m-3 bg-blue-50 rounded-xl">
+      <div className="px-4 py-3 mx-3 mb-3 bg-blue-50 rounded-xl">
         <div className="text-[10px] text-blue-500 font-semibold uppercase tracking-wide mb-0.5">Event Day</div>
         <div className="text-xs text-blue-800 font-medium">7–10 October 2026, Yashobhoomi</div>
         <EventCountdown />
       </div>
-
-      {/* Logged in user */}
-      {user && (
-        <div className="px-4 py-3 border-t border-slate-100">
-          <div className="text-[10px] text-slate-400">Logged in as</div>
-          <div className="text-xs font-semibold text-slate-700 truncate">{user.name}</div>
-          <button
-            onClick={clearUser}
-            className="text-[10px] text-blue-500 hover:underline mt-0.5"
-          >
-            Switch user
-          </button>
-        </div>
-      )}
     </aside>
+  );
+}
+
+function WhatsAppBadge() {
+  // Count tasks that have a WhatsApp comment from the last 24h
+  const { tasks } = useTaskStore();
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - 1);
+  const count = tasks.filter((t) =>
+    t.comments.some(
+      (c) => c.id.startsWith('wa_') && new Date(c.timestamp) >= cutoff
+    )
+  ).length;
+
+  return (
+    <span className={cn(
+      'text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center',
+      count > 0 ? 'bg-emerald-600 text-white' : 'bg-emerald-100 text-emerald-600'
+    )}>
+      {count}
+    </span>
   );
 }
 

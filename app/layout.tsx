@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { Sidebar } from '@/components/dashboard/Sidebar';
+import { TopBar } from '@/components/dashboard/TopBar';
 import { TaskStoreProvider } from '@/lib/store';
 import { AuthProvider } from '@/lib/auth';
 import { AppShell } from '@/components/dashboard/AppShell';
@@ -22,9 +23,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <AppShell>
               <div className="flex min-h-screen">
                 <Sidebar />
-                <main className="flex-1 overflow-auto">
-                  {children}
-                </main>
+                <div className="flex-1 flex flex-col overflow-hidden">
+                  <TopBar />
+                  <main className="flex-1 overflow-auto">
+                    {children}
+                  </main>
+                </div>
               </div>
             </AppShell>
           </TaskStoreProvider>
