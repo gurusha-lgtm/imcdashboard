@@ -2,13 +2,8 @@
 import { ALL_MEMBERS, useAuth } from '@/lib/auth';
 import { DEPARTMENTS } from '@/lib/data';
 
-const DEPT_LABELS: Record<string, string> = {
-  sales_marketing: 'Sales & Marketing',
-  programs: 'Programs',
-  marketing_design: 'Marketing & Design',
-  govt_relations: 'Govt Relations',
-  finance_ops: 'Finance & Ops',
-};
+const DEPT_LABELS: Record<string, string> = {};
+DEPARTMENTS.forEach((d) => { DEPT_LABELS[d.id] = d.name; });
 
 const DEPT_COLORS: Record<string, string> = {};
 DEPARTMENTS.forEach((d) => { DEPT_COLORS[d.id] = d.color; });

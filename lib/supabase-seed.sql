@@ -1,10 +1,61 @@
--- IMC 2026 Dashboard — Supabase Schema & Seed
--- Run this in your Supabase SQL Editor
+-- IMC 2026 Dashboard — Supabase Schema & Seed (v2)
+-- Run this in your Supabase SQL Editor (drops and recreates everything)
 
--- Drop existing table if re-running
+-- ===================== USERS TABLE =====================
+
+drop table if exists users;
+
+create table users (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  department_id text not null,
+  role text not null default 'member',
+  whatsapp_number text,
+  created_at timestamptz default now()
+);
+
+alter table users enable row level security;
+create policy "Allow all users" on users for all using (true) with check (true);
+
+insert into users (name, department_id, role, whatsapp_number) values
+('P. Ramakrishna', 'ceo', 'ceo', null),
+('Pradeep Prakash', 'sales', 'lead', null),
+('Parul Singh', 'sales', 'member', null),
+('Samit Shukla', 'sales', 'member', null),
+('Lovesh Bhatia', 'sales', 'member', null),
+('Rohit Mehra', 'sales', 'member', null),
+('Garima Sharma', 'conference', 'lead', null),
+('Gurusha Sethi', 'conference', 'member', null),
+('Priyanka Sondhi', 'conference', 'member', null),
+('Ankit Joshi', 'conference', 'member', null),
+('Neha Kapoor', 'conference', 'member', null),
+('Vipin Kumar', 'marketing', 'lead', null),
+('Deepika Rao', 'marketing', 'member', null),
+('Karan Mehta', 'marketing', 'member', null),
+('Sneha Pillai', 'marketing', 'member', null),
+('Preeti Agarwal', 'pr', 'lead', null),
+('Rahul Srivastava', 'pr', 'member', null),
+('Tanya Khanna', 'pr', 'member', null),
+('Manish Dubey', 'pr', 'member', null),
+('Sudhakaran', 'govt_liaison', 'lead', null),
+('Ritika Nair', 'govt_liaison', 'member', null),
+('Vikram Bose', 'govt_liaison', 'member', null),
+('Ananya Krishnan', 'govt_liaison', 'member', null),
+('Neeraj Singh', 'operations', 'lead', null),
+('Rahul Verma', 'operations', 'member', null),
+('Pooja Tiwari', 'operations', 'member', null),
+('Sanjay Bhatt', 'operations', 'member', null),
+('Divya Malhotra', 'operations', 'member', null),
+('Shreya Bansal', 'aspire', 'lead', null),
+('Kabir Sethi', 'aspire', 'member', null),
+('Prachi Goyal', 'aspire', 'member', null),
+('Nikhil Agarwal', 'aspire', 'member', null),
+('Riya Sharma', 'aspire', 'member', null);
+
+-- ===================== TASKS TABLE =====================
+
 drop table if exists tasks;
 
--- Create tasks table
 create table tasks (
   id text primary key,
   title text not null,
@@ -25,13 +76,9 @@ create table tasks (
   updated_at timestamptz default now()
 );
 
--- Enable Row Level Security
 alter table tasks enable row level security;
+create policy "Allow all tasks" on tasks for all using (true) with check (true);
 
--- Allow all operations for now (you can restrict later by user/role)
-create policy "Allow all" on tasks for all using (true) with check (true);
-
--- Trigger to auto-update updated_at
 create or replace function update_updated_at()
 returns trigger as $$
 begin
@@ -44,154 +91,105 @@ create trigger tasks_updated_at
   before update on tasks
   for each row execute function update_updated_at();
 
--- ===================== SEED DATA =====================
+-- ===================== SEED TASKS =====================
 
 insert into tasks (id, title, description, department, status, priority, assignees, due_date, created_at, tags, subtasks, comments, dependencies, milestone, notes) values
 
--- SALES & MARKETING
-('SM001','Platinum Partner Confirmations','Confirm all Platinum tier sponsors, collect signed agreements and advance payments','sales_marketing','in_progress','critical',
- '{"Pradeep Prakash","Parul Singh"}','2026-07-22','2026-07-08',
- '{"platinum","partnerships"}',
- '[{"id":"SM001-1","title":"Send contracts to confirmed Platinum partners","done":true},{"id":"SM001-2","title":"Collect signed agreements (8/12)","done":true},{"id":"SM001-3","title":"Follow up with remaining 4 partners","done":false},{"id":"SM001-4","title":"Update CRM with final status","done":false}]',
- '[{"id":"c1","author":"Pradeep Prakash","text":"Reliance and Airtel confirmed. 4 still pending.","timestamp":"2026-07-15"},{"id":"c2","author":"Parul Singh","text":"Following up with Samsung and Nokia this week.","timestamp":"2026-07-15"}]',
- '{}', true, 'Retainer clients from IMC 2025 auto-confirmed. New Platinum additions pending legal review.'),
+-- SALES
+('SA001','Retainer Client Renewal Contracts','Process renewal agreements for returning sponsors from IMC 2025','sales','done','critical','{"Parul Singh"}','2026-06-17','2026-06-03','{"retainer","contracts"}','[]','[]','{}',false,null),
+('SA002','Platinum Partner Confirmations','Confirm all Platinum tier sponsors, collect signed agreements and advance payments','sales','in_progress','critical','{"Pradeep Prakash","Parul Singh"}','2026-07-29','2026-06-03','{"platinum","partnerships"}','[{"id":"SA002-1","title":"Send contracts to confirmed Platinum partners","done":true},{"id":"SA002-2","title":"Collect signed agreements (8/12)","done":true},{"id":"SA002-3","title":"Follow up with remaining 4 partners","done":false},{"id":"SA002-4","title":"Update CRM with final status","done":false}]','[{"id":"c1","author":"Pradeep Prakash","text":"Reliance and Airtel confirmed. 4 still pending.","timestamp":"2026-05-20"},{"id":"c2","author":"Parul Singh","text":"Following up with Samsung and Nokia this week.","timestamp":"2026-05-27"}]','{}',true,'Retainer clients from IMC 2025 auto-confirmed. New Platinum additions pending legal review.'),
+('SA003','Sponsorship Deck Refresh','Update sponsorship deck with IMC 2026 theme, new packages, and 2025 event stats','sales','review','high','{"Lovesh Bhatia"}','2026-07-15','2026-06-03','{"deck","collateral"}','[{"id":"SA003-1","title":"Gather IMC 2025 event metrics","done":true},{"id":"SA003-2","title":"Update package pricing and tiers","done":true},{"id":"SA003-3","title":"Design review with Vipin Kumar","done":false}]','[{"id":"c3","author":"Lovesh Bhatia","text":"Draft done. Sent to Vipin for design review.","timestamp":"2026-05-27"}]','{"MK001"}',false,null),
+('SA004','Partnership Tier Benefits Sign-off','Lock in deliverables for each sponsorship tier','sales','done','critical','{"Pradeep Prakash"}','2026-06-17','2026-06-03','{"tiers","benefits"}','[]','[]','{}',false,'Aligned with Conference team on session allocation per tier.'),
+('SA005','Gold Partner Outreach — Wave 2','Second wave of email and call outreach to 20 remaining Gold tier prospects','sales','in_progress','high','{"Samit Shukla","Lovesh Bhatia"}','2026-08-12','2026-06-03','{"gold","outreach"}','[{"id":"SA005-1","title":"Wave 1 sent — 20 contacts","done":true},{"id":"SA005-2","title":"Wave 2 calls scheduled","done":true},{"id":"SA005-3","title":"Follow-up emails to hot leads","done":false},{"id":"SA005-4","title":"CRM updated with outcomes","done":false}]','[]','{}',false,null),
+('SA006','CRM Pipeline Cleanup and Deal Tagging','Clean up HubSpot pipeline, tag deals by tier and stage, remove dead leads','sales','in_progress','medium','{"Rohit Mehra"}','2026-07-22','2026-06-03','{"CRM","pipeline"}','[]','[]','{}',false,null),
+('SA007','Platinum Partner Advance Payment Collection','Collect first tranche payments from confirmed Platinum partners per contract terms','sales','in_progress','critical','{"Parul Singh"}','2026-07-22','2026-06-03','{"payments","platinum"}','[{"id":"SA007-1","title":"Issue advance invoices","done":true},{"id":"SA007-2","title":"Follow up with accounts teams","done":true},{"id":"SA007-3","title":"Confirm 8/12 payments received","done":false}]','[{"id":"c4","author":"Parul Singh","text":"6 of 12 payments received. Chasing 6 more.","timestamp":"2026-05-20"}]','{"SA002"}',false,null),
+('SA008','Silver and Associate Partner Closures','Close remaining Silver and Associate sponsorship slots before cutoff','sales','not_started','medium','{"Samit Shukla"}','2026-08-26','2026-06-03','{"silver","associate"}','[]','[]','{"SA005"}',false,null),
+('SA009','Partner Lounge Allocation Per Tier','Assign lounge zones, meeting rooms, and networking areas to sponsors by tier','sales','not_started','high','{"Pradeep Prakash"}','2026-08-26','2026-06-03','{"partners","venue"}','[]','[]','{"SA004","OP001"}',false,null),
+('SA010','On-Site Branding Handover to Ops','Hand over final partner logo assets and branding specs to Operations team','sales','not_started','high','{"Parul Singh"}','2026-09-09','2026-06-03','{"branding","handover"}','[]','[]','{"SA002","MK001"}',false,null),
+('SA011','Partner Welcome Kit Design Brief','Brief Marketing on design for partner welcome kits and onboarding materials','sales','not_started','medium','{"Lovesh Bhatia"}','2026-08-19','2026-06-03','{"welcome kit","collateral"}','[]','[]','{"SA004"}',false,null),
+('SA012','Sponsor Hospitality and Gifts Planning','Plan VIP hospitality, speaker gifts, and partner appreciation tokens for Oct 7–10','sales','not_started','medium','{"Rohit Mehra"}','2026-08-26','2026-06-03','{"hospitality","gifts"}','[]','[]','{}',false,null),
 
-('SM002','Gold Partner Outreach Campaign','Email and call campaign for 40 Gold tier prospects','sales_marketing','in_progress','high',
- '{"Samit Shukla","Lovesh Bhatia"}','2026-08-05','2026-07-08',
- '{"gold","outreach"}',
- '[{"id":"SM002-1","title":"Segment prospect list","done":true},{"id":"SM002-2","title":"Draft email sequence","done":true},{"id":"SM002-3","title":"Wave 1 sent (20 contacts)","done":true},{"id":"SM002-4","title":"Wave 2 sent (20 contacts)","done":false},{"id":"SM002-5","title":"Schedule follow-up calls","done":false}]',
- '[]','{}', false, null),
+-- CONFERENCE MANAGEMENT
+('CM001','Keynote Speaker Confirmations — All 4 Days','Confirm keynote speakers for main stage across all 4 event days (Oct 7–10)','conference','in_progress','critical','{"Garima Sharma","Gurusha Sethi"}','2026-07-29','2026-06-03','{"keynote","speakers"}','[{"id":"CM001-1","title":"Day 1 keynote confirmed (DoT Minister)","done":true},{"id":"CM001-2","title":"Day 2 keynote confirmed (Industry CEO)","done":true},{"id":"CM001-3","title":"Day 3 keynote — awaiting PMO confirmation","done":false},{"id":"CM001-4","title":"Day 4 valedictory speaker locked","done":false},{"id":"CM001-5","title":"Speaker briefs and logistics info sent","done":false}]','[{"id":"c5","author":"Garima Sharma","text":"DoT minister confirmed Day 1. PMO response still pending for Day 3.","timestamp":"2026-05-13"}]','{"GL001"}',true,'Day 3 keynote contingent on Govt Liaison confirming ministerial availability.'),
+('CM002','Track 1 Agenda — 5G & Connectivity','Build complete 4-day session agenda for Track 1','conference','in_progress','high','{"Gurusha Sethi"}','2026-08-12','2026-06-03','{"agenda","5G","track1"}','[{"id":"CM002-1","title":"Map partner sessions to Track 1","done":true},{"id":"CM002-2","title":"Fill remaining slots with industry speakers","done":false},{"id":"CM002-3","title":"Confirm panel moderators","done":false}]','[]','{"SA002","SA004"}',false,null),
+('CM003','Track 2 Agenda — AI & Deep Tech','Build 4-day session agenda for Track 2','conference','not_started','high','{"Gurusha Sethi"}','2026-08-12','2026-06-03','{"agenda","AI","track2"}','[]','[]','{"CM002"}',false,null),
+('CM004','Track 3 Agenda — Cybersecurity & Cloud','Build 4-day session agenda for Track 3','conference','not_started','medium','{"Ankit Joshi"}','2026-08-12','2026-06-03','{"agenda","cybersecurity","track3"}','[]','[]','{"CM002"}',false,null),
+('CM005','Speaker Confirmation Round 2 — Follow-ups','Follow up with speakers who have not confirmed yet','conference','in_progress','critical','{"Garima Sharma"}','2026-07-29','2026-06-03','{"speakers","follow-up"}','[{"id":"CM005-1","title":"Send reminder emails to 15 pending speakers","done":true},{"id":"CM005-2","title":"Personal calls to top 5 priority speakers","done":false},{"id":"CM005-3","title":"Update speaker tracker","done":false}]','[{"id":"c6","author":"Garima Sharma","text":"8 of 15 responded positively. Still chasing 7.","timestamp":"2026-05-27"}]','{}',false,null),
+('CM006','Speaker AV & Tech Requirements Collection','Collect slide format, mic preference, and AV requirements from all speakers','conference','not_started','high','{"Ankit Joshi"}','2026-08-19','2026-06-03','{"speakers","AV","tech"}','[]','[]','{"CM001"}',false,null),
+('CM007','Session Moderator Assignments','Assign moderators to every panel and fireside chat across all 3 tracks','conference','not_started','high','{"Neha Kapoor"}','2026-08-26','2026-06-03','{"moderators","sessions"}','[]','[]','{"CM002","CM003"}',false,null),
+('CM008','Speaker Travel & Accommodation','Coordinate flights, hotels, and on-site logistics for all confirmed speakers','conference','not_started','high','{"Gurusha Sethi"}','2026-09-09','2026-06-03','{"speakers","travel","logistics"}','[]','[]','{"CM001"}',false,null),
+('CM009','Stage Scripts & Runsheets — All 4 Days','Prepare MC scripts and minute-by-minute runsheets for Oct 7–10','conference','not_started','high','{"Garima Sharma","Gurusha Sethi"}','2026-09-23','2026-06-03','{"runsheet","scripts"}','[]','[]','{"CM001","CM002","CM003"}',false,null),
+('CM010','Awards Programme — Categories & Jury','Finalise award categories, select jury panel, and plan ceremony runsheet','conference','not_started','medium','{"Garima Sharma"}','2026-09-02','2026-06-03','{"awards","ceremony"}','[]','[]','{"GL001"}',false,null),
+('CM011','Pre-Event Speaker Briefing Notes','Send briefing documents to all speakers covering logistics, theme, and session context','conference','not_started','medium','{"Neha Kapoor"}','2026-09-16','2026-06-03','{"speakers","briefing"}','[]','[]','{"CM001"}',false,null),
+('CM012','Session Recording & Livestream Plan','Plan which sessions are recorded and livestreamed, brief production vendor','conference','not_started','medium','{"Ankit Joshi"}','2026-08-19','2026-06-03','{"livestream","recording"}','[]','[]','{}',false,null),
+('CM013','Delegate Networking Session Design','Design structured networking sessions for delegates between tracks','conference','not_started','medium','{"Priyanka Sondhi"}','2026-08-19','2026-06-03','{"networking","delegates"}','[]','[]','{}',false,null),
 
-('SM003','Sponsorship Deck Refresh','Update sponsorship deck with IMC 2026 theme, new packages, and 2025 event stats','sales_marketing','review','high',
- '{"Lovesh Bhatia"}','2026-07-15','2026-07-08',
- '{"deck","collateral"}',
- '[{"id":"SM003-1","title":"Gather IMC 2025 metrics","done":true},{"id":"SM003-2","title":"Update package pricing","done":true},{"id":"SM003-3","title":"Design review with Vipin","done":false}]',
- '[{"id":"c3","author":"Lovesh Bhatia","text":"Draft done. Sent to Vipin for design review.","timestamp":"2026-07-15"}]',
- '{"MD001"}', false, null),
+-- MARKETING
+('MK001','IMC 2026 Brand Identity Finalized','Visual identity, theme, colour palette and design language locked','marketing','done','critical','{"Vipin Kumar"}','2026-06-17','2026-06-03','{"branding","design","theme"}','[]','[]','{}',true,null),
+('MK002','Event Website — Go Live','Launch IMC 2026 website with agenda, speakers, and delegate registration','marketing','in_progress','critical','{"Vipin Kumar","Karan Mehta"}','2026-07-29','2026-06-03','{"website","digital"}','[{"id":"MK002-1","title":"Home page design and copy","done":true},{"id":"MK002-2","title":"Agenda page (placeholder)","done":true},{"id":"MK002-3","title":"Registration flow integration","done":false},{"id":"MK002-4","title":"Speaker profiles page","done":false},{"id":"MK002-5","title":"QA and go-live","done":false}]','[{"id":"c7","author":"Karan Mehta","text":"Registration backend needs API from Ops. Waiting on OP007 scope.","timestamp":"2026-05-20"}]','{"MK001"}',true,null),
+('MK003','Physical Collateral — Print Brief to Agency','Brief design agency on banners, signage, badges, brochures for Yashobhoomi','marketing','in_progress','high','{"Deepika Rao"}','2026-08-19','2026-06-03','{"print","agency","signage"}','[{"id":"MK003-1","title":"Collateral inventory list prepared","done":true},{"id":"MK003-2","title":"Agency brief submitted","done":true},{"id":"MK003-3","title":"First proofs review","done":false},{"id":"MK003-4","title":"Final approval and send to print","done":false}]','[]','{"MK001"}',false,null),
+('MK004','Partner Logo Wall & Co-branded Assets','Collect all sponsor logos and produce co-branded assets per tier','marketing','in_progress','medium','{"Deepika Rao"}','2026-08-26','2026-06-03','{"logos","branding","partners"}','[]','[]','{"SA002"}',false,null),
+('MK005','AV & Stage Design Brief to Production Agency','Brief production agency on main stage aesthetics, LED screens, and AV','marketing','not_started','high','{"Vipin Kumar"}','2026-08-26','2026-06-03','{"AV","stage","production"}','[]','[]','{"MK001"}',false,null),
+('MK006','Save-the-Date Email Campaign','Send save-the-date emails to all 2025 attendees and prospect database','marketing','done','high','{"Karan Mehta"}','2026-06-10','2026-06-03','{"email","campaign"}','[]','[]','{}',false,null),
+('MK007','Social Media Content Calendar — Pre-Event','Plan and schedule all pre-event social posts','marketing','in_progress','high','{"Sneha Pillai"}','2026-08-26','2026-06-03','{"social media","content"}','[{"id":"MK007-1","title":"Save-the-date posts published","done":true},{"id":"MK007-2","title":"Speaker reveal series planned","done":true},{"id":"MK007-3","title":"Partner announcement posts scheduled","done":false},{"id":"MK007-4","title":"Countdown posts (4 weeks out)","done":false}]','[{"id":"c8","author":"Sneha Pillai","text":"Save the date engagement 2.4x vs last year. Speaker reveals performing well.","timestamp":"2026-05-13"}]','{"MK001"}',false,null),
+('MK008','Digital Banner Set for All Platforms','Create digital banner assets for website, LinkedIn, Twitter/X, email headers','marketing','in_progress','high','{"Deepika Rao"}','2026-08-19','2026-06-03','{"digital","banners","design"}','[]','[]','{"MK001"}',false,null),
+('MK009','Delegate Registration Page Design','Design the registration flow UX — form, confirmation email, and badge preview','marketing','in_progress','high','{"Karan Mehta"}','2026-08-19','2026-06-03','{"registration","UX","design"}','[]','[]','{"MK001"}',false,null),
+('MK010','Photography & Videography Brief','Brief photo/video vendor on shot list, coverage zones, and deliverables','marketing','not_started','medium','{"Sneha Pillai"}','2026-08-26','2026-06-03','{"photography","video"}','[]','[]','{}',false,null),
+('MK011','Event App UI Design','Design mobile app screens — agenda, speaker profiles, networking, floor map','marketing','not_started','medium','{"Karan Mehta"}','2026-08-19','2026-06-03','{"app","UI","design"}','[]','[]','{"MK001"}',false,null),
+('MK012','IMC 2026 Explainer Video Brief','Brief video production house on 90-second event promo video for social and website','marketing','not_started','medium','{"Vipin Kumar"}','2026-08-12','2026-06-03','{"video","promo"}','[]','[]','{"MK001"}',false,null),
 
-('SM004','Retainer Client Renewals','Process renewal contracts for returning sponsors from IMC 2025','sales_marketing','done','critical',
- '{"Parul Singh"}','2026-07-08','2026-07-08','{"renewals","retainer"}','[]','[]','{}', false, null),
+-- PR
+('PB001','Press Release — IMC 2026 Launch','Draft and distribute press release announcing IMC 2026 dates, theme, and key highlights','pr','done','critical','{"Preeti Agarwal"}','2026-06-17','2026-06-03','{"press release","launch"}','[]','[]','{}',false,null),
+('PB002','Media Accreditation List','Compile and vet list of journalists, media houses, and publications for press passes','pr','in_progress','high','{"Rahul Srivastava"}','2026-08-12','2026-06-03','{"media","accreditation"}','[{"id":"PB002-1","title":"Pull list from IMC 2025 database","done":true},{"id":"PB002-2","title":"Add new outlets and freelancers","done":true},{"id":"PB002-3","title":"Vet list with editorial team","done":false}]','[]','{}',false,null),
+('PB003','Press Kit Preparation','Assemble press kit: event overview, speaker bios, sponsor logos, key stats, brand assets','pr','in_progress','high','{"Tanya Khanna"}','2026-08-12','2026-06-03','{"press kit","media"}','[{"id":"PB003-1","title":"Event fact sheet drafted","done":true},{"id":"PB003-2","title":"Speaker bios collected","done":false},{"id":"PB003-3","title":"Brand assets from Marketing","done":false}]','[]','{"MK001"}',false,null),
+('PB004','Speaker Announcement Media Series','Coordinated media outreach and social posts announcing keynote and track speakers','pr','in_progress','high','{"Preeti Agarwal"}','2026-07-29','2026-06-03','{"speakers","announcements","media"}','[]','[]','{"CM001"}',false,null),
+('PB005','Partner Announcement Press Coverage','Pitch partner announcements to tech and business media for placement','pr','in_progress','medium','{"Manish Dubey"}','2026-07-29','2026-06-03','{"partners","press","media"}','[]','[]','{}',false,null),
+('PB006','Journalist Guest List Finalization','Finalize confirmed journalist attendees, assign zones, and coordinate press badges','pr','not_started','high','{"Rahul Srivastava"}','2026-08-26','2026-06-03','{"journalists","guests"}','[]','[]','{"PB002"}',false,null),
+('PB007','Press Conference Planning — Day 1','Organise dedicated press conference slot on Day 1 post-inauguration','pr','not_started','critical','{"Preeti Agarwal"}','2026-09-09','2026-06-03','{"press conference","day1"}','[]','[]','{"GL001"}',false,null),
+('PB008','Live Social Media Coverage Plan','Plan real-time social coverage during the event — Twitter X, LinkedIn, Instagram','pr','not_started','medium','{"Tanya Khanna"}','2026-09-02','2026-06-03','{"social media","live coverage"}','[]','[]','{}',false,null),
+('PB009','Influencer & Blogger Invite List','Identify and invite tech influencers and bloggers for complimentary passes','pr','not_started','medium','{"Manish Dubey"}','2026-08-19','2026-06-03','{"influencers","bloggers"}','[]','[]','{}',false,null),
+('PB010','Media Monitoring Dashboard Setup','Set up tracking for IMC 2026 mentions across print, digital, and social','pr','not_started','medium','{"Rahul Srivastava"}','2026-08-12','2026-06-03','{"monitoring","media"}','[]','[]','{}',false,null),
+('PB011','Post-Event Press Release Drafts','Draft post-event press releases covering announcements, policy launches, and highlights','pr','not_started','medium','{"Tanya Khanna"}','2026-09-30','2026-06-03','{"press release","post-event"}','[]','[]','{}',false,null),
 
-('SM005','Partnership Tier Benefits Sign-off','Lock in deliverables for each sponsorship tier — sessions, branding, booth allocation','sales_marketing','done','critical',
- '{"Pradeep Prakash","Garima Sharma"}','2026-07-08','2026-07-08','{"tiers","benefits"}','[]','[]','{}', false,
- 'Aligned with Programs team on session allocation per tier.'),
+-- GOVERNMENT LIAISON
+('GL001','MeitY Minister — Inauguration Confirmation','Confirm Minister of Electronics & IT for Day 1 inauguration at Yashobhoomi','govt_liaison','in_progress','critical','{"Sudhakaran"}','2026-08-12','2026-06-03','{"MeitY","inauguration","ministerial"}','[{"id":"GL001-1","title":"Initial approach letter sent","done":true},{"id":"GL001-2","title":"Ministry secretariat meeting done","done":true},{"id":"GL001-3","title":"Formal confirmation letter received","done":false},{"id":"GL001-4","title":"Protocol and logistics briefing","done":false}]','[{"id":"c9","author":"Sudhakaran","text":"Secretary confirmed minister available Oct 7. Awaiting official letter from PS.","timestamp":"2026-05-06"}]','{}',true,'Also pursuing PMO participation for Day 4 valedictory. P. Ramakrishna to send personal letter.'),
+('GL002','DoT Approval Letter for Event Hosting','Obtain formal approval letter from Department of Telecom for IMC 2026 at Yashobhoomi','govt_liaison','in_progress','critical','{"Sudhakaran"}','2026-07-22','2026-06-03','{"DoT","approval","letter"}','[{"id":"GL002-1","title":"Application submitted","done":true},{"id":"GL002-2","title":"File number received","done":true},{"id":"GL002-3","title":"Follow-up with JS office","done":false}]','[]','{}',false,null),
+('GL003','DoT 6G Policy Announcement Coordination','Coordinate with DoT for potential 6G/spectrum policy announcement at IMC 2026','govt_liaison','in_progress','critical','{"Vikram Bose"}','2026-08-26','2026-06-03','{"DoT","policy","6G"}','[]','[]','{"GL001"}',false,'Highly sensitive — coordinate messaging with Conference team before any public communication.'),
+('GL004','State Government Delegations — 5 States','Coordinate with IT Ministers and CMOs across MH, KA, TN, TS, UP to attend IMC 2026','govt_liaison','in_progress','high','{"Ritika Nair"}','2026-08-26','2026-06-03','{"state","delegations"}','[{"id":"GL004-1","title":"Target states identified: MH, KA, TN, TS, UP","done":true},{"id":"GL004-2","title":"CMO outreach letters sent","done":true},{"id":"GL004-3","title":"Follow-up calls with state secretariats","done":false}]','[]','{}',false,null),
+('GL005','Official Ministerial Invitation Letters','Draft and despatch formal invitation letters to all confirmed government attendees','govt_liaison','in_progress','high','{"Ananya Krishnan"}','2026-08-19','2026-06-03','{"invitations","protocol"}','[]','[]','{"GL001"}',false,null),
+('GL006','PMO Participation — Day 4 Valedictory','Pursue PMO office for senior participation at Day 4 valedictory and closing ceremony','govt_liaison','in_progress','critical','{"Sudhakaran"}','2026-08-12','2026-06-03','{"PMO","valedictory"}','[]','[]','{}',false,null),
+('GL007','VIP Security & Protocol — CISF Briefing','Coordinate VIP security with CISF and Delhi Police for Yashobhoomi entry and zones','govt_liaison','not_started','high','{"Vikram Bose"}','2026-09-16','2026-06-03','{"security","CISF","VIP"}','[]','[]','{"GL001","GL004"}',false,null),
+('GL008','International Delegations — Embassy Coordination','Coordinate with embassies and trade bodies for international government delegations','govt_liaison','not_started','medium','{"Ananya Krishnan"}','2026-09-02','2026-06-03','{"international","embassy"}','[]','[]','{"GL001"}',false,null),
+('GL009','Government Delegation Briefing Document','Prepare briefing document for all state and central government delegations attending','govt_liaison','not_started','medium','{"Ritika Nair"}','2026-09-09','2026-06-03','{"briefing","delegations"}','[]','[]','{"GL004"}',false,null),
+('GL010','VIP Lounge Protocol Guide','Prepare VIP lounge access rules, seating protocol, and hospitality guide','govt_liaison','not_started','high','{"Ananya Krishnan"}','2026-09-16','2026-06-03','{"VIP","protocol","lounge"}','[]','[]','{"GL001"}',false,null),
+('GL011','Security Clearance List — Speakers & Press','Submit final list of international speakers and press to CISF for background clearance','govt_liaison','not_started','high','{"Vikram Bose"}','2026-09-09','2026-06-03','{"security","clearance"}','[]','[]','{"CM001"}',false,null),
 
-('SM006','Silver & Associate Partner Closures','Close remaining Silver and Associate sponsorship slots','sales_marketing','not_started','medium',
- '{"Samit Shukla"}','2026-08-19','2026-07-08','{"silver","associate"}','[]','[]','{"SM002"}', false, null),
+-- OPERATIONS
+('OP001','Venue Layout & Floor Plan — Yashobhoomi','Finalise IICC Yashobhoomi hall allocations, floor plans, zone definitions','operations','in_progress','critical','{"Neeraj Singh"}','2026-08-12','2026-06-03','{"venue","floor plan","Yashobhoomi"}','[{"id":"OP001-1","title":"Hall allocations confirmed with IICC","done":true},{"id":"OP001-2","title":"Exhibition zone layout","done":true},{"id":"OP001-3","title":"Conference hall layout","done":false},{"id":"OP001-4","title":"Entry/exit and emergency routes","done":false}]','[{"id":"c10","author":"Neeraj Singh","text":"IICC confirmed halls D, E, F for exhibition. Conference halls still to allocate.","timestamp":"2026-05-13"}]','{}',true,null),
+('OP002','Vendor Contracts — AV, Fabrication, Power','Finalise and sign contracts with all core build vendors at Yashobhoomi','operations','in_progress','critical','{"Neeraj Singh","Sanjay Bhatt"}','2026-08-19','2026-06-03','{"vendors","contracts"}','[{"id":"OP002-1","title":"AV vendor finalised","done":true},{"id":"OP002-2","title":"Fabrication and carpentry vendor","done":true},{"id":"OP002-3","title":"Power and electrical vendor","done":false},{"id":"OP002-4","title":"Catering vendor shortlist and negotiation","done":false}]','[]','{}',true,null),
+('OP003','Catering & F&B Vendor Finalization','Finalize catering partner for all 4 days — meals, tea breaks, cocktail reception','operations','in_progress','high','{"Pooja Tiwari"}','2026-08-19','2026-06-03','{"catering","F&B","vendor"}','[{"id":"OP003-1","title":"RFP sent to 4 caterers","done":true},{"id":"OP003-2","title":"Tastings scheduled","done":false},{"id":"OP003-3","title":"Contract signed","done":false}]','[]','{}',false,null),
+('OP004','Event Budget vs Actuals Review','Monthly budget reconciliation — flag overruns, reforecast where needed','operations','in_progress','high','{"Neeraj Singh"}','2026-09-23','2026-06-03','{"budget","finance"}','[]','[{"id":"c11","author":"Neeraj Singh","text":"Production costs 12% over forecast. Raised with Pradeep and CEO.","timestamp":"2026-05-06"}]','{}',false,null),
+('OP005','Hotel Room Block — Speakers & VIPs','Negotiate and block hotel rooms at Aerocity/CP for speakers, ministers, and VIP guests','operations','in_progress','high','{"Divya Malhotra"}','2026-08-12','2026-06-03','{"hotel","accommodation","VIP"}','[]','[]','{"CM001"}',false,null),
+('OP006','Startup Pod Floor Map — with Aspire','Coordinate startup pod layout with Aspire team, assign booths per company','operations','not_started','critical','{"Sanjay Bhatt"}','2026-08-19','2026-06-03','{"startup pods","floor map"}','[]','[]','{"OP001","AS001"}',false,null),
+('OP007','Delegate Registration System Setup','Configure badge printing, QR scanning, and check-in kiosk system for 10,000+ delegates','operations','not_started','high','{"Rahul Verma"}','2026-09-09','2026-06-03','{"registration","badges","QR"}','[]','[]','{"MK002","OP001"}',false,null),
+('OP008','WiFi & Networking Infrastructure Plan','Plan enterprise WiFi coverage for all halls — delegates, exhibitors, press, VIP zones','operations','not_started','high','{"Rahul Verma"}','2026-08-26','2026-06-03','{"WiFi","networking","tech"}','[]','[]','{"OP001"}',false,null),
+('OP009','Emergency Exit & Safety Drill Plan','Plan emergency evacuation routes, fire safety drill, and first aid station positions','operations','not_started','critical','{"Neeraj Singh"}','2026-09-02','2026-06-03','{"safety","emergency","drill"}','[]','[]','{"OP001"}',false,null),
+('OP010','Shuttle & Transport Logistics Plan','Plan shuttle routes between Aerocity hotels and Yashobhoomi for speakers and VIPs','operations','not_started','medium','{"Pooja Tiwari"}','2026-09-02','2026-06-03','{"transport","shuttle","logistics"}','[]','[]','{}',false,null),
+('OP011','On-Site Signage Placement Plan','Map all directional and sponsor signage placements across Yashobhoomi halls','operations','not_started','medium','{"Divya Malhotra"}','2026-09-09','2026-06-03','{"signage","wayfinding"}','[]','[]','{"MK003"}',false,null),
+('OP012','On-Site Staff & Volunteer Briefing','Brief 150+ on-site staff and volunteers on roles, zones, and escalation protocol','operations','not_started','high','{"Neeraj Singh"}','2026-09-30','2026-06-03','{"staff","volunteers","briefing"}','[]','[]','{"OP001","OP002"}',false,null),
+('OP013','Sponsor Payment Tracking Dashboard','Set up real-time payment tracking for all sponsor invoices and milestone payments','operations','in_progress','critical','{"Neeraj Singh"}','2026-09-09','2026-06-03','{"payments","finance","tracking"}','[]','[]','{"SA007"}',false,null),
+('OP014','Post-Event Vendor Settlement','Process all vendor final invoices and close payments within 30 days post-event','operations','not_started','medium','{"Sanjay Bhatt"}','2026-11-07','2026-06-03','{"finance","vendors","post-event"}','[]','[]','{"OP002"}',false,null),
 
-('SM007','On-Site Branding Handover','Hand over final partner logo assets and branding requirements to operations','sales_marketing','not_started','high',
- '{"Parul Singh","Vipin Kumar"}','2026-09-02','2026-07-08','{"branding","handover"}','[]','[]','{"SM001","MD001"}', false, null),
-
--- PROGRAMS
-('PR001','Keynote Speaker Confirmations','Confirm keynote speakers for main stage across all 4 event days (Oct 7–10)','programs','in_progress','critical',
- '{"Garima Sharma","Gurusha Sethi"}','2026-08-05','2026-07-08',
- '{"keynote","speakers"}',
- '[{"id":"PR001-1","title":"Day 1 keynote confirmed (DoT Minister)","done":true},{"id":"PR001-2","title":"Day 2 keynote confirmed (Industry CEO)","done":true},{"id":"PR001-3","title":"Day 3 keynote — awaiting PMO","done":false},{"id":"PR001-4","title":"Day 4 valedictory speaker","done":false},{"id":"PR001-5","title":"Send speaker briefs and logistics info","done":false}]',
- '[{"id":"c4","author":"Garima Sharma","text":"DoT minister confirmed Day 1. PMO response pending for Day 3.","timestamp":"2026-07-22"}]',
- '{"GR001"}', true, 'Day 3 keynote contingent on Government Relations confirming ministerial availability.'),
-
-('PR002','Session Agenda — Track 1 (5G & Connectivity)','Build complete 4-day agenda for Track 1','programs','in_progress','high',
- '{"Gurusha Sethi"}','2026-08-05','2026-07-08','{"agenda","track1","5G"}',
- '[{"id":"PR002-1","title":"Map partner sessions to track","done":true},{"id":"PR002-2","title":"Fill non-partner slots","done":false},{"id":"PR002-3","title":"Confirm panel moderators","done":false}]',
- '[]','{"SM001","SM005"}', false, null),
-
-('PR003','Session Agenda — Track 2 (AI & Deep Tech)','Build 4-day agenda for Track 2','programs','not_started','high',
- '{"Gurusha Sethi"}','2026-08-05','2026-07-08','{"agenda","track2","AI"}','[]','[]','{"PR002"}', false, null),
-
-('PR004','Social Media Content Calendar','Plan and schedule all pre-event social posts','programs','in_progress','high',
- '{"Priyanka Sondhi"}','2026-08-19','2026-07-08',
- '{"social media","content"}',
- '[{"id":"PR004-1","title":"Save-the-date posts published","done":true},{"id":"PR004-2","title":"Speaker reveal series planned","done":true},{"id":"PR004-3","title":"Partner announcement posts scheduled","done":false},{"id":"PR004-4","title":"Countdown posts (4 weeks out)","done":false}]',
- '[{"id":"c5","author":"Priyanka Sondhi","text":"Save the date went live. Engagement is strong — 2.4x last year.","timestamp":"2026-07-22"}]',
- '{"MD001"}', false, null),
-
-('PR005','Design Assets for Event Collateral','Create all design assets — digital banners, emailers, social creatives, stage backdrops','programs','in_progress','high',
- '{"Priyanka Sondhi","Vipin Kumar"}','2026-08-12','2026-07-08',
- '{"design","collateral","digital"}',
- '[{"id":"PR005-1","title":"Digital banner set","done":true},{"id":"PR005-2","title":"Email template designs","done":true},{"id":"PR005-3","title":"Stage backdrop and AV screens","done":false},{"id":"PR005-4","title":"Badge and registration desk design","done":false}]',
- '[]','{"MD001"}', false, null),
-
-('PR006','Speaker Travel & Accommodation','Coordinate flights, hotel stays, and on-site logistics for confirmed speakers','programs','not_started','high',
- '{"Gurusha Sethi"}','2026-09-02','2026-07-08','{"speakers","logistics","travel"}','[]','[]','{"PR001"}', false, null),
-
-('PR007','Stage Scripts & Runsheets (All 4 Days)','Prepare MC scripts and minute-by-minute runsheets for Oct 7–10','programs','not_started','high',
- '{"Garima Sharma","Gurusha Sethi"}','2026-09-16','2026-07-08','{"runsheet","scripts"}','[]','[]','{"PR001","PR002","PR003"}', false, null),
-
-('PR008','Awards Programme — Categories & Jury','Finalise award categories, select jury panel, and plan ceremony','programs','not_started','medium',
- '{"Garima Sharma"}','2026-08-26','2026-07-08','{"awards","ceremony"}','[]','[]','{"GR001"}', false, null),
-
--- MARKETING & DESIGN
-('MD001','IMC 2026 Brand Identity','Finalise visual identity, theme, colour palette and design language','marketing_design','done','critical',
- '{"Vipin Kumar"}','2026-07-08','2026-07-08','{"branding","design","theme"}','[]','[]','{}', true, null),
-
-('MD002','Event Website — Go Live','Launch IMC 2026 website with agenda, speakers, and delegate registration','marketing_design','in_progress','critical',
- '{"Vipin Kumar"}','2026-08-05','2026-07-08',
- '{"website","digital"}',
- '[{"id":"MD002-1","title":"Home page design and copy","done":true},{"id":"MD002-2","title":"Agenda page (placeholder)","done":true},{"id":"MD002-3","title":"Registration integration","done":false},{"id":"MD002-4","title":"Speaker profiles page","done":false},{"id":"MD002-5","title":"QA and go-live","done":false}]',
- '[]','{"MD001"}', true, null),
-
-('MD003','Physical Collateral — Print Brief to Agency','Brief design agency on banners, signage, badges, brochures for Yashobhoomi','marketing_design','in_progress','high',
- '{"Vipin Kumar"}','2026-08-12','2026-07-08',
- '{"print","agency","signage"}',
- '[{"id":"MD003-1","title":"Collateral inventory list","done":true},{"id":"MD003-2","title":"Agency brief submitted","done":true},{"id":"MD003-3","title":"First proofs review","done":false},{"id":"MD003-4","title":"Final approval and send to print","done":false}]',
- '[]','{"MD001"}', false, null),
-
-('MD004','Partner Logo Wall & Co-branded Assets','Collect all sponsor logos and produce co-branded assets per tier','marketing_design','in_progress','medium',
- '{"Vipin Kumar"}','2026-08-19','2026-07-08','{"partners","logos","branding"}','[]','[]','{"SM001"}', false, null),
-
-('MD005','AV & Stage Design Brief','Brief production agency on main stage aesthetics, LED screens, and AV','marketing_design','not_started','high',
- '{"Vipin Kumar"}','2026-08-19','2026-07-08','{"AV","stage","production"}','[]','[]','{"MD001"}', false, null),
-
--- GOVERNMENT RELATIONS
-('GR001','MeitY Minister — Inauguration Confirmation','Confirm Minister of Electronics & IT for Day 1 inauguration at Yashobhoomi','govt_relations','in_progress','critical',
- '{"Sudhakaran"}','2026-08-05','2026-07-08',
- '{"MeitY","inauguration","ministerial"}',
- '[{"id":"GR001-1","title":"Initial approach letter sent","done":true},{"id":"GR001-2","title":"Ministry secretariat meeting done","done":true},{"id":"GR001-3","title":"Formal confirmation received","done":false},{"id":"GR001-4","title":"Protocol and logistics briefing","done":false}]',
- '[{"id":"c6","author":"Sudhakaran","text":"Secretary confirmed minister is available Oct 7. Awaiting official letter.","timestamp":"2026-07-22"}]',
- '{}', true, 'Also pursuing PMO participation for Day 4 valedictory.'),
-
-('GR002','DoT Policy Announcement Coordination','Coordinate with DoT for potential 6G/spectrum policy announcement at IMC 2026','govt_relations','in_progress','critical',
- '{"Sudhakaran"}','2026-08-19','2026-07-08','{"DoT","policy","6G"}','[]','[]','{"GR001"}', false,
- 'Highly sensitive — coordinate messaging with Programs before any public communication.'),
-
-('GR003','State Government Delegations','Coordinate with 5 state IT Ministers / CMs to attend IMC 2026','govt_relations','in_progress','high',
- '{"Sudhakaran"}','2026-08-19','2026-07-08','{"state","delegations"}','[]','[]','{}', false, null),
-
-('GR004','VIP Security & Protocol — CISF Briefing','Coordinate VIP security arrangements with CISF and Delhi Police','govt_relations','not_started','high',
- '{"Sudhakaran"}','2026-09-09','2026-07-08','{"security","VIP","CISF"}','[]','[]','{"GR001","GR003"}', false, null),
-
-('GR005','Official Ministerial Invitation Letters','Draft and despatch formal invitation letters to all confirmed government attendees','govt_relations','in_progress','high',
- '{"Sudhakaran"}','2026-08-12','2026-07-08','{"invitations","protocol"}','[]','[]','{"GR001"}', false, null),
-
-('GR006','International Delegations — Embassy Coordination','Coordinate with embassies and trade bodies for international government delegations','govt_relations','not_started','medium',
- '{"Sudhakaran"}','2026-08-26','2026-07-08','{"international","delegations","embassy"}','[]','[]','{"GR001"}', false, null),
-
--- FINANCE & HR OPERATIONS
-('FO001','Vendor Contracts — AV, Fabrication, Power','Finalise and sign contracts with all core build vendors at Yashobhoomi','finance_ops','in_progress','critical',
- '{"Neeraj Singh"}','2026-08-12','2026-07-08',
- '{"vendors","contracts"}',
- '[{"id":"FO001-1","title":"AV vendor finalised","done":true},{"id":"FO001-2","title":"Fabrication/carpentry vendor","done":true},{"id":"FO001-3","title":"Power & electrical vendor","done":false},{"id":"FO001-4","title":"Catering vendor shortlist","done":false}]',
- '[]','{}', true, null),
-
-('FO002','Sponsor Invoice & Payment Tracking','Track advance payments, milestone invoices, and outstanding balances from all sponsors','finance_ops','in_progress','critical',
- '{"Neeraj Singh"}','2026-09-02','2026-07-08','{"invoicing","payments","finance"}','[]',
- '[{"id":"c7","author":"Neeraj Singh","text":"Production costs 12% over forecast. Raised with Pradeep.","timestamp":"2026-07-22"}]',
- '{"SM001"}', false, null),
-
-('FO003','Event Budget vs Actuals Review','Monthly budget reconciliation — flag overruns, reforecast where needed','finance_ops','in_progress','high',
- '{"Neeraj Singh"}','2026-09-16','2026-07-08','{"budget","finance"}','[]','[]','{}', false, null),
-
-('FO004','Venue Layout & Floor Plan (Yashobhoomi)','Finalise IICC Yashobhoomi hall allocations, floor plans, zone definitions','finance_ops','in_progress','critical',
- '{"Neeraj Singh"}','2026-08-05','2026-07-08',
- '{"venue","Yashobhoomi","floor-plan"}',
- '[{"id":"FO004-1","title":"Hall allocations confirmed with IICC","done":true},{"id":"FO004-2","title":"Exhibition zone layout","done":true},{"id":"FO004-3","title":"Conference hall layout","done":false},{"id":"FO004-4","title":"Entry/exit and emergency routes","done":false}]',
- '[]','{}', true, null),
-
-('FO005','Delegate Registration System','Configure badge printing, QR scanning, and check-in kiosk system','finance_ops','not_started','high',
- '{"Neeraj Singh"}','2026-09-02','2026-07-08','{"registration","badges","tech"}','[]','[]','{"MD002","FO004"}', false, null),
-
-('FO006','On-Site Staff & Volunteer Briefing','Brief 150+ on-site staff and volunteers on roles, zones, and escalation','finance_ops','not_started','high',
- '{"Neeraj Singh"}','2026-09-30','2026-07-08','{"staff","volunteers","briefing"}','[]','[]','{"FO004","FO001"}', false, null),
-
-('FO007','Post-Event Vendor Settlement','Process all vendor final invoices and payments within 30 days post-event','finance_ops','not_started','medium',
- '{"Neeraj Singh"}','2026-11-10','2026-07-08','{"finance","vendors","post-event"}','[]','[]','{"FO001","FO002"}', false, null);
+-- ASPIRE
+('AS001','Aspire Eligibility Criteria Finalized','Lock eligibility rules: startup stage, founding year, funding cap, sector focus','aspire','done','high','{"Shreya Bansal"}','2026-06-17','2026-06-03','{"eligibility","criteria"}','[]','[]','{}',false,null),
+('AS002','Startup Application Form — Go Live','Launch online application form for startups to apply for IMC 2026 Aspire pods','aspire','done','critical','{"Kabir Sethi"}','2026-06-10','2026-06-03','{"application","form"}','[]','[]','{"AS001"}',false,null),
+('AS003','Startup Pod Sales — 40 Slots Pipeline','Drive paid pod sales to startups — target 40 pods at Rs.2L per slot','aspire','in_progress','critical','{"Shreya Bansal","Prachi Goyal"}','2026-08-12','2026-06-03','{"sales","pods","startups"}','[{"id":"AS003-1","title":"Outreach to 100 target startups","done":true},{"id":"AS003-2","title":"First wave calls (30 startups)","done":true},{"id":"AS003-3","title":"22 pods confirmed (paid)","done":true},{"id":"AS003-4","title":"Second wave to close remaining 18","done":false}]','[{"id":"c12","author":"Shreya Bansal","text":"22 confirmed, 18 to go. Conversion rate strong at 22/40 in 4 weeks.","timestamp":"2026-05-13"}]','{}',false,null),
+('AS004','Startup Selection Jury Panel','Assemble jury of VCs, corp innovation leads, and founders to evaluate Aspire applicants','aspire','in_progress','high','{"Shreya Bansal"}','2026-07-29','2026-06-03','{"jury","selection"}','[]','[]','{}',false,null),
+('AS005','Aspire Program Agenda — Pitches & Workshops','Design 2-day Aspire schedule: pitch slots, investor workshops, mentoring sessions','aspire','in_progress','high','{"Kabir Sethi"}','2026-08-19','2026-06-03','{"agenda","pitches","workshops"}','[]','[]','{"AS004"}',false,null),
+('AS006','Investor Guest List for Aspire Day','Curate and invite 50+ investors, CVCs, and accelerators to Aspire showcase day','aspire','in_progress','high','{"Nikhil Agarwal"}','2026-08-12','2026-06-03','{"investors","VCs","guests"}','[{"id":"AS006-1","title":"Investor longlist compiled (80+)","done":true},{"id":"AS006-2","title":"Shortlist to 50 with relevance filters","done":false},{"id":"AS006-3","title":"Invites sent and RSVPs tracked","done":false}]','[]','{}',false,null),
+('AS007','Startup Onboarding Kit Design & Dispatch','Design and send welcome kit to selected startups: booth guide, branding specs, schedule','aspire','not_started','medium','{"Prachi Goyal"}','2026-09-02','2026-06-03','{"onboarding","kit"}','[]','[]','{"AS002"}',false,null),
+('AS008','Mentor Allocation Per Selected Startup','Match each Aspire startup to a relevant industry mentor for pre-event sessions','aspire','not_started','medium','{"Riya Sharma"}','2026-09-02','2026-06-03','{"mentors","startups"}','[]','[]','{"AS004"}',false,null),
+('AS009','Aspire Marketing & Outreach Campaign','Run targeted digital campaign to attract quality startup applications and pod sales','aspire','in_progress','high','{"Riya Sharma"}','2026-08-12','2026-06-03','{"marketing","outreach","digital"}','[]','[]','{"MK001"}',false,null),
+('AS010','Partnership with Accelerators & VCs','Formalise partnerships with 5+ accelerators to co-promote Aspire and send startups','aspire','in_progress','high','{"Nikhil Agarwal"}','2026-07-29','2026-06-03','{"accelerators","VCs","partnerships"}','[]','[]','{}',false,null),
+('AS011','Startup Pod Floor Map Sign-off with Ops','Finalise pod layout and submit to Operations for floor plan integration','aspire','not_started','critical','{"Kabir Sethi"}','2026-08-19','2026-06-03','{"floor map","pods"}','[]','[]','{"OP001"}',false,null),
+('AS012','Startup Showcase Judging Workflow','Design judging criteria, scorecard, and process for Day 2 startup pitches','aspire','not_started','medium','{"Prachi Goyal"}','2026-09-02','2026-06-03','{"judging","showcase"}','[]','[]','{"AS004"}',false,null);

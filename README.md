@@ -1,41 +1,103 @@
+# IMC 2026 Dashboard
+
+Project management dashboard for India Mobile Congress 2026 (Oct 7–10, IICC Yashobhoomi, New Delhi).
+
+Built with Next.js 16, Supabase, Tailwind CSS.
+
+---
+
 ## WhatsApp Integration
 
-The `/api/whatsapp-update` endpoint allows updating task status via WhatsApp bots (Twilio/WATI).
+Team members can update task status by sending a WhatsApp message — no app needed.
 
-### Endpoint
+### Webhook endpoint
 
-`POST /api/whatsapp-update`
+`POST /api/whatsapp`
 
-### Payload
+Handles both **Twilio** (`From` / `Body`) and **WATI** (`waId` / `text`) payload formats automatically.
 
-```json
-{
-  "taskId": "SM001",
-  "newStatus": "blocked",
-  "blockedReason": "Waiting for legal sign-off",
-  "userId": "Pradeep Prakash"
-}
+### How it works
+
+1. Team member sends a WhatsApp message to the bot number
+2. The webhook looks up their phone number in the `users` table
+3. It parses their message for a status keyword and task name
+4. It updates the matching task on the dashboard immediately
+
+**Status keywords recognised:**
+| Keywords | Sets status to |
+|---|---|
+| done / finished / complete | Done ✓ |
+| blocked / stuck / waiting / pending | Blocked 🚨 |
+| started / working / wip / ongoing | In Progress 🔄 |
+| review / reviewing / checking | In Review 👀 |
+
+**Example messages:**
+```
+print brief done
+agency not responding blocked
+started working on vendor contracts
+registration page review
 ```
 
-- `taskId` (required): The task ID (e.g. `SM001`, `PR001`)
-- `newStatus` (required): One of `not_started`, `in_progress`, `blocked`, `review`, `done`
-- `blockedReason` (optional): Required context when `newStatus` is `blocked`
-- `userId` (optional): Name of the person sending the update (for the auto-comment)
+### Registration flow
 
-### Connecting Twilio / WATI
+Team members must register once before they can update tasks.
 
-1. Deploy this app to a public URL (e.g. Vercel)
-2. In your Twilio/WATI dashboard, set the webhook URL to:
-   `POST https://your-domain.com/api/whatsapp-update`
-3. Parse the incoming WhatsApp message in a separate serverless function and call this endpoint
+1. First message from any unregistered number gets this reply:
+   > *You're not registered yet. Send: register [your full name]*
 
-### Example curl
+2. They reply:
+   > `register Priya Sharma`
+
+3. The system matches their name against the `users` table and links their number. They get a confirmation with their task list.
+
+### Connecting Twilio Sandbox (for testing)
+
+1. Go to [console.twilio.com](https://console.twilio.com) → Messaging → Try it out → Send a WhatsApp message
+2. Follow the sandbox join instructions (send `join [code]` to the sandbox number)
+3. Set the sandbox webhook URL to:
+   ```
+   POST https://your-vercel-domain.com/api/whatsapp
+   ```
+4. Add environment variables to Vercel:
+   ```
+   TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+   TWILIO_AUTH_TOKEN=your_auth_token
+   TWILIO_WHATSAPP_NUMBER=whatsapp:+14155238886
+   ```
+
+### Moving to WATI (production)
+
+WATI uses a different payload format — the webhook handles both automatically:
+- Twilio: `{ From: "whatsapp:+91...", Body: "message" }`
+- WATI: `{ waId: "91...", text: "message" }`
+
+In WATI, set the webhook URL to `POST https://your-domain.com/api/whatsapp`.
+
+### Setting up the database
+
+Run `lib/supabase-seed.sql` in your Supabase SQL Editor. This creates:
+- `users` table with all 33 team members (phone numbers start as null)
+- `tasks` table with all 85 seeded tasks across 7 departments
+
+Team members register their WhatsApp number the first time they message the bot.
+
+---
+
+## Getting Started
 
 ```bash
-curl -X POST https://your-domain.com/api/whatsapp-update \
-  -H "Content-Type: application/json" \
-  -d '{"taskId":"SM001","newStatus":"blocked","blockedReason":"Partner not responding","userId":"Pradeep Prakash"}'
+npm install
+npm run dev
 ```
+
+Copy `.env.example` to `.env.local` and fill in your Supabase credentials.
+
+Open [http://localhost:3000](http://localhost:3000).
+
+## Deploy
+
+Deploy to Vercel. Add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` as environment variables, then redeploy.
 
 ---
 

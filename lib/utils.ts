@@ -82,9 +82,11 @@ export function initials(name: string): string {
 }
 
 export const DEPT_COLORS: Record<Department, string> = {
-  sales_marketing: '#2563eb',
-  programs: '#7c3aed',
-  marketing_design: '#db2777',
-  govt_relations: '#059669',
-  finance_ops: '#dc2626',
+  sales: '#2563eb',
+  conference: '#7c3aed',
+  marketing: '#db2777',
+  pr: '#0891b2',
+  govt_liaison: '#059669',
+  operations: '#dc2626',
+  aspire: '#d97706',
 };
